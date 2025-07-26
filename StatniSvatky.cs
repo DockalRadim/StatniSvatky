@@ -1,4 +1,5 @@
 ﻿using System.Linq;
+using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace StatniSvatky;
 
@@ -46,13 +47,23 @@ public class StatniSvatky
     private IEnumerable<DateTime> GetStatniSvatkyNaRokBezVelikonoc(int year)
     {
         IEnumerable<DateTime> svatky = [.. SvatkyBezVelikonoc.Select(s => new DateTime(year, s.Month, s.Day))];
+
         return svatky;
     }
 
     private IEnumerable<DateTime> GetStatniSvatkyNaRokBezVelikonocZavrenoVObchodech(int year)
     {
         IEnumerable<DateTime> svatky = [.. SvatkyBezVelikonoc.Where(s => !s.OpenStores).Select(s => new DateTime(year, s.Month, s.Day))];
+
         return svatky;
+    }
+
+    private static void ValidateYear(int year)
+    {
+        if (year < 1583 || year > 9999)
+        {
+            throw new ArgumentOutOfRangeException(nameof(year), "Rok musí být v rozmezí 1583 - 9999.");
+        }
     }
 
     /// <summary>
@@ -60,14 +71,25 @@ public class StatniSvatky
     /// </summary>
     /// <param name="year">rok</param>
     /// <returns></returns>
-    public static DateTime GetVelikonocniPondeli(int year) => GetEasterSunday(year).AddDays(1);
+    public static DateTime GetVelikonocniPondeli(int year)
+    {
+        ValidateYear(year);
+
+        return GetEasterSunday(year).AddDays(1);
+    }
 
     /// <summary>
     /// Vrátí datum velkého pátku pro zadaný rok.
     /// </summary>
     /// <param name="year">rok</param>
     /// <returns></returns>
-    public static DateTime GetVelkyPatek(int year) => GetEasterSunday(year).AddDays(-2);
+    public static DateTime GetVelkyPatek(int year)
+    {
+        ValidateYear(year); 
+
+        return GetEasterSunday(year).AddDays(-2);
+    }
+    
 
     /// <summary>
     /// Vrátí oba velikonoční svátky pro zadaný rok.
@@ -76,40 +98,49 @@ public class StatniSvatky
     /// <returns>Tuple(DateTime Velký Patek,DateTime Velikonoční Pondělí)</returns>
     public static (DateTime VelkyPatek, DateTime VelikonocníPondeli) GetVelikonocniSvatky(int year)
     {
+        ValidateYear(year);
+
         DateTime easterSunday = GetEasterSunday(year);
         DateTime velkyPatek = easterSunday.AddDays(-2);
         DateTime velikonocníPondeli = easterSunday.AddDays(1);
+
         return (velkyPatek, velikonocníPondeli);
     }
 
     /// <summary>
-    /// Vráti seznam všech státních svátků v daném roce.
+    /// Vrátí seznam všech státních svátků v daném roce.
     /// </summary>
     /// <param name="year"></param>
     /// <returns></returns>
     public IEnumerable<DateTime> GetStatniSvatkyNaRok(int year)
     {
+        ValidateYear(year);
         List<DateTime> svatky = [];
         DateTime velikonocniNedele = GetEasterSunday(year);
+
         svatky.Add(velikonocniNedele.AddDays(-2));
         svatky.Add(velikonocniNedele.AddDays(1));
         svatky.AddRange(GetStatniSvatkyNaRokBezVelikonoc(year));
-        return svatky as IEnumerable<DateTime>;
+
+        return svatky;
     }
 
     /// <summary>
-    /// Vráti seznam všech státních svátků v daném roce,
+    /// Vrátí seznam všech státních svátků v daném roce,
     /// ve kterých platí zákaz prodeje. (pro 24.12. vrací false)
     /// </summary>
     /// <param name="year"></param>
     /// <returns></returns>
     public IEnumerable<DateTime> GetStatniSvatkyNaRokZavrenoVObchodech(int year)
     {
+        ValidateYear(year);
         List<DateTime> svatky = [];
         DateTime velikonocniNedele = GetEasterSunday(year);
+
         svatky.Add(velikonocniNedele.AddDays(1));
         svatky.AddRange(GetStatniSvatkyNaRokBezVelikonocZavrenoVObchodech(year));
-        return svatky as IEnumerable<DateTime>;
+
+        return svatky;
     }
 
     /// <summary>
@@ -119,11 +150,12 @@ public class StatniSvatky
     /// <returns></returns>
     public bool JeSvatek(DateTime datum)
     {
-
         int month = datum.Month;
         int day = datum.Day;
         int year = datum.Year;
-        if (SvatkyBezVelikonoc.Select(s => s.Day == day && s.Month == month).Any())
+        ValidateYear(year);
+
+        if (SvatkyBezVelikonoc.Any(s => s.Day == day && s.Month == month))
         {
             return true;
         }
@@ -132,6 +164,7 @@ public class StatniSvatky
         {
             return true;
         }
+
         return false;
     }
 
@@ -146,7 +179,9 @@ public class StatniSvatky
         int month = datum.Month;
         int day = datum.Day;
         int year = datum.Year;
-        if (SvatkyBezVelikonoc.Select(s => s.Day == day && s.Month == month && !s.OpenStores).Any())
+        ValidateYear(year);
+
+        if (SvatkyBezVelikonoc.Any(s => s.Day == day && s.Month == month && !s.OpenStores))
         {
             return true;
         }
@@ -155,6 +190,7 @@ public class StatniSvatky
         {
             return true;
         }
+
         return false;
     }
 
@@ -165,11 +201,13 @@ public class StatniSvatky
     /// <returns></returns>
     public string? GetPopisSvatku(DateTime datum) 
     {
+        ValidateYear(datum.Year);
         if (!JeSvatek(datum)) 
         { 
             return null;
         }
-        string? description = SvatkyBezVelikonoc.Where(s => s.Day == datum.Day && s.Month == datum.Month).Select(s => s.Description).FirstOrDefault();
+
+        string? description = SvatkyBezVelikonoc.First(s => s.Month == datum.Month && s.Day == datum.Day).Description;
         if (description != null) 
         {
             return description;
@@ -186,7 +224,27 @@ public class StatniSvatky
                 return "Velký pátek";
             }
         }
+
         return null;
     }
-    
+
+    /// <summary>
+    /// Vrátí seznam všech státních svátků v daném roce s podrobnostmi.
+    /// (Datum, Popis, Otevřené obchody)
+    /// </summary>
+    /// <param name="year"></param>
+    /// <returns></returns>
+    public IEnumerable<(DateTime Date, string Description, bool OpenStores)> GetStatniSvatkyDetailne(int year)
+    {
+        ValidateYear(year);
+        List<(DateTime Date, string Description, bool OpenStores)> svatky = [];
+        DateTime velikonocniNedele = GetEasterSunday(year);
+
+        svatky.Add((velikonocniNedele.AddDays(-2), "Velký pátek", false));
+        svatky.Add((velikonocniNedele.AddDays(1), "Velikonoční pondělí", true));
+        svatky.AddRange(GetStatniSvatkyNaRokBezVelikonoc(year).Select(d => (d, GetPopisSvatku(d) ?? "Neznámý svátek", SvatkyBezVelikonoc.First(s => s.Month == d.Month && s.Day == d.Day).OpenStores))
+        );
+
+        return svatky.OrderBy(s => s.Date);
+    }
 }
