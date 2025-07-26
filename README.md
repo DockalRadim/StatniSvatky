@@ -1,12 +1,12 @@
 # StatniSvatky
 
-Knihovna pro kontrolu státních svátku v ÈR, vèetnì informaci o uzavøéní obchodù.
+Knihovna pro kontrolu stÃ¡tnÃ­ch svÃ¡tku v ÄŒR, vÄetnÄ› informaci o uzavÅ™Ã©nÃ­ obchodÅ¯.
 
-Kontroly zda je danı den státní svátek, nebo zda jsou zavøeny obchody.
+Kontroly zda je danÃ½ den stÃ¡tnÃ­ svÃ¡tek, nebo zda jsou zavÅ™eny obchody.
 
-Dny velikonoèních svátku pro danı rok. Seznam státních svátkù pro danı rok.
+Dny velikonoÄnÃ­ch svÃ¡tku pro danÃ½ rok. Seznam stÃ¡tnÃ­ch svÃ¡tkÅ¯ pro danÃ½ rok.
 
 
 ## License
 
-This project is licensed under the [MIT License](LICENSE).
+This project is licensed under the [MIT License](LICENSE.txt).
