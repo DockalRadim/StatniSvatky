@@ -7,7 +7,7 @@ public class StatniSvatky
 {
     private record StatniSvatek(int Month, int Day, string Description, bool OpenStores);
 
-    private readonly IReadOnlyList<StatniSvatek> SvatkyBezVelikonoc =
+    private static readonly IReadOnlyList<StatniSvatek> SvatkyBezVelikonoc =
 [
     new(1, 1,   "Nový rok, Den obnovy samostatného českého státu", false),
     new(5, 1,   "Svátek práce", true),
@@ -24,6 +24,9 @@ public class StatniSvatky
 
     private static DateTime GetEasterSunday(int year)
     {
+        ValidateYear(year);
+
+        // Algoritmus pro výpočet data Velikonoc podle Gaussova vzorce
         int a = year % 19;
         int b = year / 100;
         int c = year % 100;
@@ -44,14 +47,14 @@ public class StatniSvatky
         return easterSunday;
     }
 
-    private IEnumerable<DateTime> GetStatniSvatkyNaRokBezVelikonoc(int year)
+    private static IEnumerable<DateTime> GetStatniSvatkyNaRokBezVelikonoc(int year)
     {
         IEnumerable<DateTime> svatky = [.. SvatkyBezVelikonoc.Select(s => new DateTime(year, s.Month, s.Day))];
 
         return svatky;
     }
 
-    private IEnumerable<DateTime> GetStatniSvatkyNaRokBezVelikonocZavrenoVObchodech(int year)
+    private static IEnumerable<DateTime> GetStatniSvatkyNaRokBezVelikonocZavrenoVObchodech(int year)
     {
         IEnumerable<DateTime> svatky = [.. SvatkyBezVelikonoc.Where(s => !s.OpenStores).Select(s => new DateTime(year, s.Month, s.Day))];
 
@@ -112,7 +115,7 @@ public class StatniSvatky
     /// </summary>
     /// <param name="year"></param>
     /// <returns></returns>
-    public IEnumerable<DateTime> GetStatniSvatkyNaRok(int year)
+    public static IEnumerable<DateTime> GetStatniSvatkyNaRok(int year)
     {
         ValidateYear(year);
         List<DateTime> svatky = [];
@@ -131,7 +134,7 @@ public class StatniSvatky
     /// </summary>
     /// <param name="year"></param>
     /// <returns></returns>
-    public IEnumerable<DateTime> GetStatniSvatkyNaRokZavrenoVObchodech(int year)
+    public static IEnumerable<DateTime> GetStatniSvatkyNaRokZavrenoVObchodech(int year)
     {
         ValidateYear(year);
         List<DateTime> svatky = [];
@@ -148,7 +151,7 @@ public class StatniSvatky
     /// </summary>
     /// <param name="datum"></param>
     /// <returns></returns>
-    public bool JeSvatek(DateTime datum)
+    public static bool JeSvatek(DateTime datum)
     {
         int month = datum.Month;
         int day = datum.Day;
@@ -174,7 +177,7 @@ public class StatniSvatky
     /// </summary>
     /// <param name="datum"></param>
     /// <returns></returns>
-    public bool JeZavrenoVObchodech(DateTime datum)
+    public static bool JeZavrenoVObchodech(DateTime datum)
     {
         int month = datum.Month;
         int day = datum.Day;
@@ -199,7 +202,7 @@ public class StatniSvatky
     /// </summary>
     /// <param name="datum"></param>
     /// <returns></returns>
-    public string? GetPopisSvatku(DateTime datum) 
+    public static string? GetPopisSvatku(DateTime datum) 
     {
         ValidateYear(datum.Year);
         if (!JeSvatek(datum)) 
@@ -234,7 +237,7 @@ public class StatniSvatky
     /// </summary>
     /// <param name="year"></param>
     /// <returns></returns>
-    public IEnumerable<(DateTime Date, string Description, bool OpenStores)> GetStatniSvatkyDetailne(int year)
+    public static IEnumerable<(DateTime Date, string Description, bool OpenStores)> GetStatniSvatkyDetailne(int year)
     {
         ValidateYear(year);
         List<(DateTime Date, string Description, bool OpenStores)> svatky = [];
